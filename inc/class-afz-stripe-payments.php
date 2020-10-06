@@ -18,7 +18,7 @@ if(!class_exists('AFZ_Stripe_Payments')){
             $this->includes();
             // Start Stripe
             \Stripe\Stripe::setApiKey($this->stripe_keys['secret_key']);
-            $this->$stripe_client = new \Stripe\StripeClient($this->stripe_keys['secret_key']);
+            $this->stripe_client = new \Stripe\StripeClient($this->stripe_keys['secret_key']);
         }
 
         // Include the required files
