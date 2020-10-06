@@ -190,6 +190,7 @@ function afz_set_custom_transaction_columns($columns){
 
     unset( $columns['date'] ); // Unset and set again to keep it the last
     $columns['amount'] = 'Amount';
+    $columns['type'] = 'Type';
     $columns['buyer_name'] = 'Name';
     $columns['buyer_email'] = 'E-Mail';
     $columns['date'] = 'Date';
@@ -204,6 +205,9 @@ function afz_custom_transactions_columns( $column, $post_id ){
     switch ( $column ){
         case 'amount' :
             echo (get_post_meta( $post_id , 'transaction_amount' , true ) / 100) . '€';
+        break;
+        case 'type' :
+            echo get_post_meta( $post_id , 'transaction_type' , true );
         break;
         case 'buyer_name' :
             echo get_post_meta( $post_id , 'transaction_name' , true );

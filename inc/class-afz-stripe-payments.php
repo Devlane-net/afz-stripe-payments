@@ -5,17 +5,20 @@ if(!class_exists('AFZ_Stripe_Payments')){
     class AFZ_Stripe_Payments{
 
         // Save Stripe keys into array
-        public $stripe = array(
+        public $stripe_keys = array(
             'secret_key' => STRIPE_SECRET,       // Put your own secret key here
             'publishable_key' => STRIPE_PUBLIC,  // Put your own public key here
             'webhook_secret' => STRIPE_WEBHOOK   // Put your own webhook key here
         );
 
+        public $stripe_client;
+
         // Fire up the plugin
         public function __construct(){
             $this->includes();
             // Start Stripe
-            \Stripe\Stripe::setApiKey($this->stripe['secret_key']);
+            \Stripe\Stripe::setApiKey($this->stripe_keys['secret_key']);
+            $this->$stripe_client = new \Stripe\StripeClient($this->stripe_keys['secret_key']);
         }
 
         // Include the required files
@@ -82,7 +85,18 @@ if(!class_exists('AFZ_Stripe_Payments')){
                     <div class="col-md-6 col-lg-7" style="padding:2rem;">
                         <form id="payment-form">
                         <input type="text" id="buyer_name" placeholder="Name">
-                        <input type="email" id="buyer_email" placeholder="E-mail">
+
+                        <?php
+                        if(is_user_logged_in()){
+                            $current_user = wp_get_current_user();
+                            echo '<input type="hidden" id="buyer_email" value="'.$current_user->user_email.'">';
+                        }else{
+                        ?>
+                            <input type="email" id="buyer_email" placeholder="E-mail">
+                        <?php
+                        }
+                        ?>
+
                         <div id="card-element" style="border: 1px solid #555;margin:1rem 0;padding:0.8rem;"></div>
                         <div id="card-errors" role="alert"></div>
                         <button id="card-button" data-secret="<?php echo $intent->client_secret; ?>">

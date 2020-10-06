@@ -2,7 +2,7 @@
 /**
 * Plugin Name: Stripe Payments
 * Description: Simple Stripe payments integration.
-* Version: 1.0
+* Version: 1.1
 * Author: Álvaro Franz
 **/
 
