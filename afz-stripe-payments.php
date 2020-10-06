@@ -2,8 +2,9 @@
 /**
 * Plugin Name: Stripe Payments
 * Description: Simple Stripe payments integration.
-* Version: 1.0
+* Version: 1.1
 * Author: Álvaro Franz
+* GitHub Plugin URI: https://github.com/Devlane-net/afz-stripe-payments
 **/
 
 defined('ABSPATH') || exit;
