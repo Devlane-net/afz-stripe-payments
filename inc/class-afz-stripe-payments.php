@@ -18,7 +18,7 @@ if(!class_exists('AFZ_Stripe_Payments')){
             $this->includes();
             // Start Stripe
             \Stripe\Stripe::setApiKey($this->stripe_keys['secret_key']);
-            $this->$stripe_client = new \Stripe\StripeClient($this->stripe_keys['secret_key']);
+            $this->stripe_client = new \Stripe\StripeClient($this->stripe_keys['secret_key']);
         }
 
         // Include the required files
@@ -38,13 +38,34 @@ if(!class_exists('AFZ_Stripe_Payments')){
         // Display payment form
         public function display_payment_form(){
 
+            // paymentIntent data
+            $intent_data = [
+                'currency' => 'eur'
+            ];
+
             // Get the payment amount and metadata coming from POST
             $payment_amount = intval($_POST['amount']) * 100;
+            $intent_data['amount'] = $payment_amount;
             $payment_description = $_POST['description'];
 
             // Metadata
             $payment_metadata = array();
             $payment_metadata_display_info = array();
+
+            // Is user logged in
+            if(is_user_logged_in()){
+                $current_user = wp_get_current_user();
+                $current_user_email = $current_user->user_email;
+                $current_user_stripe_costumer_id = get_user_meta($current_user->ID, 'stripe_customer_id', true);
+            }else{
+                $current_user_email = false;
+                $current_user_stripe_costumer_id = false;
+            }
+
+            if($current_user_stripe_costumer_id){
+                $intent_data['customer'] = $current_user_stripe_costumer_id;
+                $intent_data['setup_future_usage'] = 'off_session';
+            }
 
             // Loop through alphabet looking for metadata
             foreach(range('A', 'Z') as $char){
@@ -68,13 +89,12 @@ if(!class_exists('AFZ_Stripe_Payments')){
                 break;
                 }
             }
+
+            // Add metadata to the payment intent array
+            $intent_data['metadata'] = $payment_metadata;
             
             // Start a paymentIntent
-            $intent = \Stripe\PaymentIntent::create([
-                'amount' => $payment_amount,
-                'currency' => 'eur',
-                'metadata' => $payment_metadata,
-            ]);
+            $intent = \Stripe\PaymentIntent::create($intent_data);
 
             // Display payment form inside #doing_payment (we will hide it after payment)
             ?>
@@ -87,12 +107,11 @@ if(!class_exists('AFZ_Stripe_Payments')){
                         <input type="text" id="buyer_name" placeholder="Name">
 
                         <?php
-                        if(is_user_logged_in()){
-                            $current_user = wp_get_current_user();
-                            echo '<input type="hidden" id="buyer_email" value="'.$current_user->user_email.'">';
+                        if($current_user_email){
+                        echo '<input type="hidden" id="buyer_email" value="'.$current_user_email.'">';
                         }else{
                         ?>
-                            <input type="email" id="buyer_email" placeholder="E-mail">
+                        <input type="email" id="buyer_email" placeholder="E-mail">
                         <?php
                         }
                         ?>
@@ -132,7 +151,7 @@ if(!class_exists('AFZ_Stripe_Payments')){
 
             <script>
                 // Load Stripe JS
-                var stripe = Stripe('<?php echo $this->stripe['publishable_key']; ?>');
+                var stripe = Stripe('<?php echo $this->stripe_keys['publishable_key']; ?>');
                 var elements = stripe.elements();
 
                 // Create card element
